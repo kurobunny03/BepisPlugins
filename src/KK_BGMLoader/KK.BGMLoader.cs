@@ -1,4 +1,4 @@
-﻿using BepInEx;
+using BepInEx;
 using BepisPlugins;
 using XUnity.ResourceRedirector;
 
@@ -22,6 +22,18 @@ namespace BGMLoader
             }
             int bgmTrack = int.Parse(context.Parameters.Name.Substring(context.Parameters.Name.Length - 2, 2));
             overrideFileName = $"BGM{bgmTrack:00}.ogg";
+            return true;
+        }
+        private static bool TryGetOverrideFileName2(IAssetLoadingContext context, out string overrideFileName2)
+        {
+            var isSfx = context.Parameters.Name.Length == 7 && context.Parameters.Name.StartsWith("khse", System.StringComparison.InvariantCultureIgnoreCase);
+            if (!isSfx)
+            {
+                overrideFileName2 = null;
+                return false;
+            }
+            int sfxTrack = int.Parse(context.Parameters.Name.Substring(context.Parameters.Name.Length - 2, 2));
+            overrideFileName2 = $"KHSE{sfxTrack:00}.wav";
             return true;
         }
     }
