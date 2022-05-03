@@ -1,4 +1,4 @@
-﻿using BepInEx;
+using BepInEx;
 using BepisPlugins;
 using Illusion.Game;
 using System.IO;
@@ -10,6 +10,7 @@ namespace BGMLoader
     /// <summary>
     /// Place .ogg files in BepInEx/plugins/bgm folder with the name BGM00.ogg, BGM01.ogg, etc. to load them in place of the game's BGM
     /// Place .wav files in BepInEx/plugins/introclips folder to load them in place of startup sounds
+     /// Place .wav files in BepInEx/plugins/SFX folder to load them in place of H sounds
     /// </summary>
     public partial class BGMLoader
     {
@@ -18,6 +19,7 @@ namespace BGMLoader
         public const string Version = Metadata.PluginsVersion;
         public static string IntroClipsDirectory = Path.Combine(Paths.PluginPath, "introclips");
         public static string BGMDirectory = Path.Combine(Paths.PluginPath, "bgm");
+        public static string SFXDirectory = Path.Combine(Paths.PluginPath, "sfx");
 
         public void Awake()
         {
@@ -27,6 +29,8 @@ namespace BGMLoader
                 ResourceRedirection.RegisterAsyncAndSyncAssetLoadingHook(LoadIntroClips);
             if (Directory.Exists(BGMDirectory))
                 ResourceRedirection.RegisterAsyncAndSyncAssetLoadingHook(LoadBGM);
+            if (Directory.Exists(SFXDirectory))
+                ResourceRedirection.RegisterAsyncAndSyncAssetLoadingHook(LoadSFX);
         }
 
         public void LoadIntroClips(IAssetLoadingContext context)
@@ -55,6 +59,21 @@ namespace BGMLoader
                 if (File.Exists(path))
                 {
                     Logger.LogDebug($"Loading BGM track \"{context.Parameters.Name}\" from {path}");
+
+                    context.Asset = AudioLoader.LoadAudioClip(path);
+                    context.Complete();
+                }
+            }
+        }
+        public void LoadSFX(IAssetLoadingContext context)
+        {
+            if (context.Parameters.Name != null && TryGetOverrideFileName2(context, out var overrideFileName))
+            {
+                var path = Path.Combine(SFXDirectory, overrideFileName);
+
+                if (File.Exists(path))
+                {
+                    Logger.LogDebug($"Loading SFX track \"{context.Parameters.Name}\" from {path}");
 
                     context.Asset = AudioLoader.LoadAudioClip(path);
                     context.Complete();
